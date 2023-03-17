@@ -2,11 +2,26 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Pong Game JavaScript</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ping Pong Game</title>
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-   <canvas id="pong" width="1000" height="600"></canvas>
-   <script src="js/ping pong.js"></script>
+    <div class="game-container">
+        <div class="game-board" id="gameBoard">
+            <div class="paddle user-paddle" id="userPaddle"></div>
+            <div class="paddle ai-paddle" id="aiPaddle"></div>
+            <div class="ball" id="ball"></div>
+            <div class="net"></div>
+        </div>
+        <div class="score-board">
+            <div class="user-score" id="userScore">0</div>
+            <div class="ai-score" id="aiScore">0</div>
+        </div>
+        <div class="message" id="message"></div>
+        <button class="start-button" id="startButton">Start Game</button>
+    </div>
+    <script src="js/ping pong.js"></script>
 </body>
 </html>
