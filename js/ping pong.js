@@ -1,24 +1,28 @@
 document.addEventListener("DOMContentLoaded", () => {
     const gameBoard = document.getElementById("gameBoard");
+    const gameWidth = document.documentElement.clientWidth * 0.7;
+    const gameHeight = document.documentElement.clientHeight * 0.7;
+    gameBoard.style.width = `${gameWidth}px`;
+    gameBoard.style.height = `${gameHeight}px`;
+  
     const userPaddle = document.getElementById("userPaddle");
     const aiPaddle = document.getElementById("aiPaddle");
     const ball = document.getElementById("ball");
-    const userScore = document.getElementById("userScore");
-    const aiScore = document.getElementById("aiScore");
+    const userScoreElem = document.getElementById("userScore");
+    const aiScoreElem = document.getElementById("aiScore");
     const message = document.getElementById("message");
     const startButton = document.getElementById("startButton");
   
+    let userPoints = 0;
+    let aiPoints = 0;
     let gameInterval;
     let ballSpeedX = 5;
     let ballSpeedY = 5;
-    let userPoints = 0;
-    let aiPoints = 0;
-    let userPaddleY = 150;
-    let aiPaddleY = 150;
   
     gameBoard.addEventListener("mousemove", (event) => {
       const rect = gameBoard.getBoundingClientRect();
-      userPaddleY = event.clientY - rect.top - userPaddle.offsetHeight / 2;
+      let userPaddleY = event.clientY - rect.top - userPaddle.offsetHeight / 2;
+      userPaddle.style.top = `${Math.max(Math.min(userPaddleY, gameBoard.offsetHeight - userPaddle.offsetHeight), 0)}px`;
     });
   
     startButton.addEventListener("click", () => {
@@ -26,59 +30,56 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   
     function startGame() {
-        clearInterval(gameInterval);
-      
-        // Show the ball and paddles when the game starts
-        ball.style.display = "block";
-        userPaddle.style.display = "block";
-        aiPaddle.style.display = "block";
-      
-        ball.style.left = `${315}px`;
-        ball.style.top = `${175}px`;
-        resetBall();
-        gameInterval = setInterval(gameLoop, 1000 / 60);
-      }      
-      
-      function gameLoop() {
-        ball.style.left = `${parseInt(ball.style.left) + ballSpeedX}px`;
-        ball.style.top = `${parseInt(ball.style.top) + ballSpeedY}px`;
-      
-        userPaddle.style.top = `${Math.max(Math.min(userPaddleY, gameBoard.offsetHeight - userPaddle.offsetHeight), 0)}px`;
-        aiPaddleY = parseInt(ball.style.top) - aiPaddle.offsetHeight / 2;
-        aiPaddle.style.top = `${Math.max(Math.min(aiPaddleY, gameBoard.offsetHeight - aiPaddle.offsetHeight), 0)}px`;
-      
-        checkCollisions();
-        checkScore();
-      
-        if (parseInt(ball.style.left) < 0 || parseInt(ball.style.left) + ball.offsetWidth > gameBoard.offsetWidth) {
-          ballSpeedX = -ballSpeedX;
-        }
-      
-        if (parseInt(ball.style.top) < 0 || parseInt(ball.style.top) + ball.offsetHeight > gameBoard.offsetHeight) {
-          ballSpeedY = -ballSpeedY;
-        }
-      }
-      
+      clearInterval(gameInterval);
+  
+      userPoints = 0;
+      aiPoints = 0;
+      userScoreElem.innerText = userPoints;
+      aiScoreElem.innerText = aiPoints;
+      message.innerText = "";
+  
+      ball.style.display = "block";
+      userPaddle.style.display = "block";
+      aiPaddle.style.display = "block";
+  
+      resetBall();
+      gameInterval = setInterval(gameLoop, 1000 / 60);
+    }
   
     function resetBall() {
-      ball.style.left = "315px";
-      ball.style.top = "175px";
-      ballSpeedX = -ballSpeedX;
+      ball.style.left = `${gameBoard.offsetWidth / 2 - ball.offsetWidth / 2}px`;
+      ball.style.top = `${gameBoard.offsetHeight / 2 - ball.offsetHeight / 2}px`;
+      ballSpeedX = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (7 - 3 + 1)) + 3);
+      ballSpeedY = (Math.random() < 0.5 ? -1 : 1) * (Math.floor(Math.random() * (5 - 2 + 1)) + 2);
+    }
+  
+    function gameLoop() {
+      ball.style.left = `${parseInt(ball.style.left) + ballSpeedX}px`;
+      ball.style.top = `${parseInt(ball.style.top) + ballSpeedY}px`;
+  
+      let aiPaddleY = parseInt(ball.style.top) - aiPaddle.offsetHeight / 2;
+      aiPaddle.style.top = `${Math.max(Math.min(aiPaddleY, gameBoard.offsetHeight - aiPaddle.offsetHeight), 0)}px`;
+  
+      checkCollisions();
+      checkScore();
     }
   
     function checkCollisions() {
-      if (
-        (parseInt(ball.style.top) >= parseInt(userPaddle.style.top) &&
-          parseInt(ball.style.top) <= parseInt(userPaddle.style.top) + userPaddle.offsetHeight &&
-          parseInt(ball.style.left) <= 40) ||
-        (parseInt(ball.style.top) >= parseInt(aiPaddle.style.top) &&
-          parseInt(ball.style.top) <= parseInt(aiPaddle.style.top) + aiPaddle.offsetHeight &&
-          parseInt(ball.style.left) >= 590)
-      ) {
+      let ballRect = ball.getBoundingClientRect();
+      let userPaddleRect = userPaddle.getBoundingClientRect();
+      let aiPaddleRect = aiPaddle.getBoundingClientRect();
+  
+      if (ballRect.left <= userPaddleRect.right && ballRect.right >= userPaddleRect.left &&
+        ballRect.top <= userPaddleRect.bottom && ballRect.bottom >= userPaddleRect.top) {
         ballSpeedX = -ballSpeedX;
       }
   
-      if (parseInt(ball.style.top) <= 0 || parseInt(ball.style.top) >= 350) {
+      if (ballRect.left <= aiPaddleRect.right && ballRect.right >= aiPaddleRect.left &&
+        ballRect.top <= aiPaddleRect.bottom && ballRect.bottom >= aiPaddleRect.top) {
+        ballSpeedX = -ballSpeedX;
+      }
+  
+      if (parseInt(ball.style.top) <= 0 || parseInt(ball.style.top) + ball.offsetHeight >= gameBoard.offsetHeight) {
         ballSpeedY = -ballSpeedY;
       }
     }
@@ -86,27 +87,31 @@ document.addEventListener("DOMContentLoaded", () => {
     function checkScore() {
       if (parseInt(ball.style.left) <= 0) {
         aiPoints++;
-        aiScore.innerText = aiPoints;
+        aiScoreElem.innerText = aiPoints;
         message.innerText = "AI got a point";
-        resetBall();
-        checkGameOver();
+        if (aiPoints < 20) {
+          resetBall();
+        } else {
+          endGame("AI wins");
+        }
       }
   
-      if (parseInt(ball.style.left) >= 630) {
+      if (parseInt(ball.style.left) + ball.offsetWidth >= gameBoard.offsetWidth) {
         userPoints++;
-        userScore.innerText = userPoints;
+        userScoreElem.innerText = userPoints;
         message.innerText = "User got a point";
-        resetBall();
-        checkGameOver();
+        if (userPoints < 20) {
+          resetBall();
+        } else {
+          endGame("User wins");
+        }
       }
     }
   
-    function checkGameOver() {
-      if (userPoints >= 20 || aiPoints >= 20) {
-        clearInterval(gameInterval);
-        message.innerText = userPoints >= 20 ? "User wins" : "AI wins";
-        startButton.innerText = "Restart Game";
+    function endGame(winnerText) {
+      clearInterval(gameInterval);
+      message.innerText = winnerText;
+      startButton.innerText = "Restart Game";
     }
-  }
-});
+  });
   
